@@ -1,0 +1,1162 @@
+---
+title: "Wpływ pracy zdalnej na dobrostan psychiczny człowieka"
+author: "Diana Morzhak"
+lang: pl
+format: 
+  html:
+    theme: cosmo
+    code-styling: grid # Wymusza tło i ramkę dla kodu
+    code-overflow: wrap   # Zapewnia, że kod nie wychodzi poza ramkę
+    toc: true
+    toc-title: "Spis treści"
+    toc-depth: 2
+    toc-location: left
+    number-sections: false
+editor: visual
+execute: 
+  echo: false
+  warning: false
+---
+
+# Wstęp
+
+![Wyobraźmy sobie, że jesteśmy przedsiębiorcami szukającymi najlepszych rozwiązań](images/2e271064572b26f8e790bc68353fcaa2.jpg)
+
+## Problem badawczy
+
+Pandemia COVID-19 przyczyniła się do radykalnej zmiany w sposobie wykonywania pracy, powodując globalny wzrost popularności pracy zdalnej i hybrydowej. Choć ten model pracy zapewnia większą elastyczność, jego wpływ na zdrowie psychiczne i samopoczucie pracowników budzi coraz większe zainteresowanie badaczy oraz praktyków. Praca zdalna niesie za sobą zarówno korzyści, jak i wyzwania – od ograniczenia czasu spędzanego na dojazdach, po poczucie izolacji społecznej i trudności w zachowaniu równowagi między życiem zawodowym a prywatnym. Niniejszy projekt podejmuje próbę zrozumienia, w jakim stopniu te czynniki kształtują dobrostan psychiczny pracowników. Celem jest zatem udzielenie odpowiedzi na pytanie "Jaki jest wpływ pracy zdalnej oraz jej uwarunkowań na zdrowie i samopoczucie psychiczne człowieka?".
+
+![Nie chcemy, aby nasi pracownicy tak się czuli, więc należy przebadać kwestię zdrowia psychicznego!](images/Follow me on instagram_ huongg_thu14_Thank you 💕.jpg)
+
+Aby obszernie przeanalizować problem, rozpatrywać będziemy następujące pytania badawcze:
+
+-   czy złe samopoczucie psychiczne w związku z wykonywaną pracą zdalną zależy od rodzaju wykonywanego zawodu lub wieku pracownika?
+
+-   jakie są różnice w samopoczuciu psychicznym pracowników zdalnych w zależności od ich płci?
+
+-   w jakim stopniu różni się poziom stresu, poczucie izolacji społecznej oraz ogólny stan psychiczny pracowników zdalnych w porównaniu do pracowników stacjonarnych?
+
+-   czy poziom stresu, poczucie izolacji społecznej oraz ogólny stan psychiczny pracowników stacjonarnych, hybrydowych oraz zdalnych różni się w zależności od zamieszkiwanego kontynentu?
+
+-   czy wpływ pracy hybrydowej jest mniej szkodliwy dla zdrowia psychicznego człowieka niż wpływ pracy zdalnej?
+
+-   czy tryb wykonywanej pracy może mieć wpływ na jakość snu pracowników?
+
+-   w jakim stopniu wsparcie oferowane przez pracodawcę zmniejsza negatywne skutki pracy zdalnej?
+
+-   czy liczba przepracowanych godzin tygodniowo ma znaczenie w kontekście zdrowia psychicznego w pracy zdalnej?
+
+## Charakterystyka zbioru danych
+
+Zbiór danych nosi nazwę "Impact of Remote Work on Mental Health" i pochodzi z patformy Kaggle od użytkownika waqi786 [^1].\
+Zbiór składa się z 20 kolumn oraz 5000 wierszy. Według informacji podanych przez autora zbioru, dane były zebrane od różnych pracowników z różnych części świata.
+
+[^1]: Link do zbioru danych (niestety już nieaktywny): <https://www.kaggle.com/datasets/waqi786/remote-work-and-mental-health>
+
+### Opis poszczególnych zmiennych:
+
+1.  `Employee_ID` - identyfikator osoby (unikalny dla każdej).
+2.  `Age` - Wiek osoby.
+3.  `Gender` - Płeć osoby.
+4.  `Job_Role` - Rola osoby w pracy.
+5.  `Industry` - Branża, w której pracuje osoba.
+6.  `Work_Location` - Lokalizacja pracy osoby.
+7.  `Hours_Worked_Per_Week` - Liczba przepracowanych godzin tygodniowo.
+8.  `Number_of_Virtual_Meetings` - Liczba wirtualnych spotkań tygodniowo.
+9.  `Work_Life_Balance_Rating` - Ocena równowagi między życiem zawodowym a prywatnym.
+10. `Stress_Level` - Poziom stresu związanego z pracą.
+11. `Mental_Health_Condition` - Ogólna ocena stanu zdrowia psychicznego osoby.
+12. `Access_to_Mental_Health_Resources` - Dostęp do zasobów zdrowia psychicznego oferowanych przez firmę.
+13. `Productivity_Change` - Zmiana produktywności w porównaniu do pracy stacjonarnej.
+14. `Social_Isolation_Rating` - Ocena poczucia izolacji społecznej spowodowanego pracą zdalną.
+15. `Satisfaction_with_Remote_Work` - Poziom zadowolenia z pracy zdalnej.
+16. `Company_Support_for_Remote_Work` - Wsparcie firmy dla pracy zdalnej.
+17. `Physical_Activity` - Poziom aktywności fizycznej osoby.
+18. `Sleep_Quality` - Wpływ pracy zdalnej na jakość snu.
+19. `Region` - Region zamieszkania osoby.
+
+Zobaczmy, jak wygląda struktura zbioru danych:
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+data <- read.csv("Impact_of_Remote_Work_on_Mental_Health.csv")
+data <- data %>% 
+  select(-Years_of_Experience, -Industry, -Employee_ID)
+
+```
+
+```{r echo=TRUE, include=FALSE}
+# załączamy biblioteki
+library(DT)
+str(data)
+```
+
+```{r include = FALSE}
+summary(data)
+```
+
+```{r}
+# z wykorzystaniem biblioteki DT
+datatable(head(data))
+```
+
+\
+
+Sprawdźmy, czy nasz zbiór zawiera brakujące wartości:
+
+```{r}
+cat("Liczba brakujących wartości:", sum(is.na(data)), "\n")
+```
+
+Zatem zbiór składa się z kolumn typu "char" oraz "int" i nie zawiera on danych brakujących. Możemy zatem przejść do jego przygotowania do analizy i wizualizacji.
+
+# Przetwarzanie danych. Selekcja cech
+
+Zajmiemy się dostosowaniem typów danych w ramce do potrzeb analizy i wykonania wizualizacji. W tym celu najpierw sprawdzimy unikalne wartości w każdej z kolumn, aby zapoznać się ze zmiennymi, które poddamy kategoryzacji:
+
+```{r}
+cat("Wartości unikalne dla zmiennej:
+     \n Work_Location: ", unique(data$Work_Location),
+    "\n Work_Life_Balance_Rating: ", unique(data$Work_Life_Balance_Rating),
+    "\n Stress_Level: ", unique(data$Stress_Level), 
+    "\n Access_to_Mental_Health_Resources: ", unique(data$Access_to_Mental_Health_Resources),
+    "\n Productivity_Change: ", unique(data$Productivity_Change),
+    "\n Social_Isolation_Rating: ", unique(data$Social_Isolation_Rating),
+    "\n Satisfaction_with_Remote_Work: ", unique(data$Satisfaction_with_Remote_Work),
+    "\n Company_Support_for_Remote_Work: ", unique(data$Company_Support_for_Remote_Work),
+    "\n Physical_Activity: ", unique(data$Physical_Activity),
+    "\n Sleep_Quality: ", unique(data$Sleep_Quality),
+    "\n Region: ", unique(data$Region))
+```
+
+```{r}
+# Kategoryzacja zmiennych:
+data <- data %>% 
+  mutate( Work_Location = factor(Work_Location),
+          Work_Life_Balance_Rating = factor(Work_Life_Balance_Rating),
+          Stress_Level = factor(Stress_Level),
+          Access_to_Mental_Health_Resources = factor(Access_to_Mental_Health_Resources),
+          Productivity_Change = factor(Productivity_Change),
+          Social_Isolation_Rating = factor(Social_Isolation_Rating),
+          Satisfaction_with_Remote_Work = factor(Satisfaction_with_Remote_Work),
+          Company_Support_for_Remote_Work = factor(Company_Support_for_Remote_Work),
+          Physical_Activity = factor(Physical_Activity),
+          Sleep_Quality = factor(Sleep_Quality),
+          Region = factor(Region),
+          Gender = factor(Gender),
+          Job_Role = factor(Job_Role),
+          Mental_Health_Condition = factor(Mental_Health_Condition))
+```
+
+```{r}
+# Usunięcie duplikatów:
+data <- data %>% 
+  distinct(.keep_all = TRUE)
+```
+
+Szukamy wartości odstających (zastosowanie biblioteki ggstatsplot i funkcji ggbetweenstats do boxplotów):
+
+```{r echo=TRUE,include = FALSE}
+library(extrafont)
+loadfonts(device = "win")
+library(ggplot2)
+library(ggstatsplot)
+```
+
+```{r}
+
+# zastosowanie pakietów ggplot2 i ggstatsplot
+ggbetweenstats(data, x = Gender, y = Age,fill = Gender, outlier.tagging = TRUE)+
+  theme(
+    text = element_text(family = "Century Gothic", size = 8, color = "black"),
+    plot.title = element_text(
+      family = "Century Gothic", 
+      size = 20,
+      face = "bold",
+      color = "#2a475e"),
+      # Statistical annotations below the main title
+    plot.subtitle = element_text(
+      family = "Century Gothic", 
+      size = 10, 
+      face = "bold",
+      color="#1b2838"
+    ),
+    plot.title.position = "plot", # slightly different from default
+    axis.text = element_text(size = 10, color = "black"),
+    axis.title = element_text(size = 12),
+    axis.ticks = element_blank(),
+    axis.line = element_line(colour = "grey50"),
+    panel.grid = element_line(color = "#b4aea9"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(linetype = "dashed"),
+    panel.background = element_rect(fill = "#ffffff", color = "#ffffff"),
+    plot.background = element_rect(fill = "#ffffff", color = "#ffffff")
+  )+
+  labs(
+    x = "Płeć",
+    y = "Wiek",
+    title = "Rozkład wieku w zależności od płci"
+  )
+```
+
+```{r}
+ggbetweenstats(
+  data = data, 
+  x = Gender, 
+  y = Hours_Worked_Per_Week,
+  fill = Gender,
+  outlier.tagging = TRUE
+) +
+  scale_color_manual(values = c(
+    "Female" = "#d462ff", 
+    "Male" = "#62e0ff", 
+    "Non-binary" = "#ffa35c", 
+    "Prefer not to say" = "#5eff7e"
+  )) +
+  theme(
+    text = element_text(family = "Century Gothic", size = 8),
+    plot.title = element_text(
+      family = "Century Gothic", 
+      size = 12,
+      face = "bold",
+      color = "#2a475e"
+    ),
+    plot.subtitle = element_text(
+      family = "Century Gothic", 
+      size = 10, 
+      face = "bold",
+      color="#1b2838"
+    ),
+    plot.title.position = "plot",
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 10),
+    axis.ticks = element_blank(),
+    axis.line = element_line(colour = "grey50"),
+    panel.grid = element_line(color = "#b4aea9"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank(),
+    panel.grid.major.y = element_line(linetype = "dashed"),
+    panel.background = element_rect(fill = "#ffffff", color = "#ffffff"),
+    plot.background = element_rect(fill = "#ffffff", color = "#ffffff")
+  ) +
+  labs(
+    x = "Płeć",
+    y = "Liczba godzin pracy w jednym tygodniu",
+    title = "Rozkład godzin pracy na tydzień w zależności od płci"
+  )
+```
+
+Widzimy gołym okiem, że zbiór również nie posiada wartości odstających. Po obliczeniach ręcznych wyniki wyglądają tak samo. Dane w zależności od płci są dość równomiernie rozłożone. Sprawdzimy, czy dalsza analiza odkryje coś ciekawego.\
+
+```{r}
+
+Q1 <- quantile(data$Hours_Worked_Per_Week, .25)
+Q3 <- quantile(data$Hours_Worked_Per_Week, .75)
+IQR <- IQR(data$Hours_Worked_Per_Week)
+
+
+outliers <- subset(data, data$Hours_Worked_Per_Week<(Q1 - 1.5*IQR) | data$Hours_Worked_Per_Week>(Q3 + 1.5*IQR))
+
+Q1_1 <- quantile(data$Age, .25)
+Q3_1 <- quantile(data$Age, .75)
+IQR_1 <- IQR(data$Age)
+
+
+outliers1 <- subset(data, data$Age<(Q1 - 1.5*IQR) | data$Age>(Q3 + 1.5*IQR))
+
+
+```
+
+Natomiast w tym momencie zbiór danych jest przygotowany do dalszego wykorzystania.
+
+# Analiza
+
+W tej części umieszczone zostaną wizualizacje oraz wnioski, jakie możemy wykonać na ich podstawie.
+
+## Korelacje
+
+### Pomiędzy zmiennymi kategorycznymi
+
+Związki pomiędzy zmiennymi kategorycznymi zbadamy za pomocą testu chi-kwadrat. Wartości p-value dla każdej pary zmiennych kategorycznych zapiszemy w macierzy `p_value_matrix`. Hipotezą zerową jest stwierdzenie, że pomiędzy dwoma zmiennymi nie zachodzi żaden związek. Poziomem istotności jest ogólnoprzyjęta wartość $\alpha = 0.05$, co oznacza, że jeżeli wartość p-value będzie mniejsza od poziomu istotności, to odrzucamy hipotezę zerową.
+
+```{r}
+# ramka danych dla zmiennych kategorycznych
+data_categorical <-  data %>% 
+  select( -Age, -Hours_Worked_Per_Week, -Number_of_Virtual_Meetings, -Job_Role)
+```
+
+```{r}
+# Inicjalizacja pustej macierzy dla p-values
+n <- ncol(data_categorical)
+p_value_matrix <- matrix(NA, nrow = n, ncol = n)
+colnames(p_value_matrix) <- rownames(p_value_matrix) <- colnames(data_categorical)
+
+# Obliczanie p-value dla każdej pary zmiennych
+for (i in 1:n) {
+  for (j in 1:n) {
+    if (i != j) {  # Pomijamy testy zmiennej ze sobą samą
+      # Tworzenie tabeli kontyngencji
+      contingency_table <- table(data_categorical[[i]], data_categorical[[j]])
+      
+      # Test chi-kwadrat
+      test_result <- chisq.test(contingency_table, simulate.p.value = FALSE)
+      
+      # Zapis p-value
+      p_value_matrix[i, j] <- test_result$p.value
+    } else {
+      p_value_matrix[i, j] <- NA  # Brak p-value dla zmiennej ze sobą samą
+    }
+  }
+}
+```
+
+```{r echo=TRUE,include = FALSE}
+library(heatmaply)
+library(RColorBrewer)
+```
+
+\
+Wykorzystujemy bibliotekę `heatmaply` do stworzenia interaktywnej mapy cieplnej:
+
+```{r}
+#zastosowanie pakietów heatmaply i RColorBrewer
+# Tworzenie heatmapy dla p-values
+heatmaply(p_value_matrix,
+        dendrogram = "none",
+        xlab = "", ylab = "",
+        main = "P-values dla testu chi-kwadrat",
+        scale = "none",
+        margins = c(60,100,40,20),
+        grid_color = "white",
+        grid_width = 0.00001,
+        titleX = FALSE,
+        hide_colorbar = FALSE,
+        branches_lwd = 0.1,
+        fontsize_row = 5, fontsize_col = 5,
+        labCol = colnames(p_value_matrix),
+        labRow = rownames(p_value_matrix),
+        heatmap_layers = theme(axis.line = element_blank()),
+        colors = colorRampPalette(brewer.pal(9, "YlGnBu"))(100) # Paleta YlGnBu
+        )
+
+```
+
+Zgodnie z naszymi założeniami możemy stwierdzić (z pewnością 95%), że istnieje związek pomiędzy następującymi parami zmiennych:
+
+-   `Access_to_Mental_Health_Resources` z `Stress_Level` , `Productivity_Change`
+
+-   `Physical_Avtivity` z `Gender` , `Social_Isolation_Rating`
+
+-   `Sleep_Quality` i `Productivity_Change`
+
+Oprócz powyższych, można również zwrócić uwagę na związek `Stress_Level` i `Social_Isolation_Rating` .
+
+Natomiast nic nie wiemy o sile tego związku. Do zbadania tego zastosujemy miarę V-Cramera. W tym celu, podobnie jak w poprzednim kroku, stworzymy macierz uzyskanych wartości, a na jej podstawie zwizualizujemy wyniki:
+
+```{r echo=TRUE,include = FALSE}
+library(vcd) # Do obliczenia miary V-Cramera
+library(ggplot2)
+library(hrbrthemes)
+library(plotly)
+library(reshape2)
+```
+
+```{r}
+# Funkcja obliczająca miarę V-Cramera
+calculate_cramers_v <- function(x, y) {
+  tbl <- table(x, y)
+  assocstats(tbl)$cramer
+}
+
+# Inicjalizacja pustej macierzy
+n <- ncol(data_categorical)
+cramers_v_matrix <- matrix(NA, nrow = n, ncol = n)
+colnames(cramers_v_matrix) <- rownames(cramers_v_matrix) <- colnames(data_categorical)
+
+# wypełniamy macierz uzyskanymi wartościami
+for (i in 1:n) {
+  for (j in 1:n) {
+    if (i != j) {
+      cramers_v_matrix[i, j] <- calculate_cramers_v(data_categorical[[i]], data_categorical[[j]])
+    } else {
+      cramers_v_matrix[i, j] <- NA  # Brak wartości dla zmiennej ze sobą samą
+    }
+  }
+}
+```
+
+```{r}
+# Zamiana macierzy na ramkę danych
+cramers_v_df <- melt(cramers_v_matrix, na.rm = TRUE)
+colnames(cramers_v_df) <- c("Variable1", "Variable2", "CramersV")
+```
+
+\
+
+Do zbudowania wykresu cieplnego wykorzystamy bibliotekę `ggplot2`. Na jego podstawie tworzymy interaktywny wykres za pomocą biblioteki `plotly` z wykorzystaniem funkcji `ggplotly`:
+
+```{r}
+# Statyczny wykres cieplny z niestandardową skalą kolorów
+heatmap_plot <- ggplot(cramers_v_df, aes(x = Variable1, y = Variable2, fill = CramersV)) +
+  geom_tile(color = "white") +  # Komórki z białymi liniami
+  scale_fill_gradientn(
+    colors = c("white", "lavender", "orchid", "purple"),
+    values = c(0, 0.1, 0.3, 0.5) / 0.5,            # Normalizacja do przedziału [0, 1]
+    limits = c(0, 0.5),                            # Zakres wartości
+    na.value = "grey"                              # Kolor dla NA
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 6),  # Rotacja etykiet osi X
+    axis.text.y = element_text(size = 6),
+    panel.grid = element_blank()                        # Usunięcie siatki
+  ) +
+  labs(
+    title = "Wykres wartości miary V-Cramera",
+    x="",
+    y="",
+    fill = "Miara V-Cramera"
+  )
+
+ggplotly(heatmap_plot, tooltip = c("x", "y", "fill"))
+```
+
+W tym przypadku również rozpatrujemy ogólnoprzyjętą skalę wartości:
+
+|                    |                                        |
+|:------------------:|:--------------------------------------:|
+|    **Wartość**     |           **Interpretacja**            |
+|    $V \leq 0.1$    |  Zmienna A ma mały wpływ na zmienną B  |
+| $0.1 < V \leq 0.3$ | Zmienna A ma średni wpływ na zmienną B |
+|    $V \ge  0.5$    | Zmienna A ma silny wpływ na zmienną B  |
+
+gdzie $V$ jest wartością miary V-Cramera.
+
+Związki pomiędzy zmiennymi kategorycznymi - choć istnieją - są słabe.
+
+### Pomiędzy zmiennymi numerycznymi
+
+```{r include = FALSE}
+data_numeric <- data %>% 
+  select(Age, Hours_Worked_Per_Week,Number_of_Virtual_Meetings)
+str(data_numeric)
+```
+
+```{r}
+library(GGally)
+ggpairs(data_numeric, aes(color = "#FF7F24",alpha = 0.5), 
+  upper = list(continuous = "points"), # Scatterploty w górnej części
+  lower = list(continuous = "points"), # Scatterploty w dolnej części
+  diag = list(continuous = "blankDiag"))
+```
+
+```{r echo=TRUE,include = FALSE}
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+# Obliczanie korelacji Pearsona
+correlation_matrix <- cor(data_numeric, method = "pearson")
+
+# Wyświetlenie macierzy korelacji w ładnym formacie
+# Tworzenie tabeli
+kable(correlation_matrix, digits = 2, format = "html") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+```
+
+\
+Po obliczeniu współczynnika korelacji Pearsona widać, że występuje tutaj brak jakichkolwiek zależności, na co wskazują zerowe wartości p-value dla poszczególnych zmiennych.
+
+### Pomiędzy zmiennymi kategorycznymi i numerycznymi
+
+Do zbdania zależności pomiędzy tytułowymi zmiennymi wykorzystamy test Kruskal-Wallis, ponieważ jest on nieparametryczny i nie wymaga spełnienia założeń normalności rozkładu. Testy dla poszczególnych zmiennych przeprowadzimy w podobny sposób jak wcześniej:
+
+```{r}
+data_categorical <- data_categorical %>%
+  mutate_all(as.factor)
+
+# Inicjalizacja macierzy
+p_value_matrix <- matrix(NA, nrow = ncol(data_numeric), ncol = ncol(data_categorical))
+rownames(p_value_matrix) <- colnames(data_numeric)
+colnames(p_value_matrix) <- colnames(data_categorical)
+
+# Pętla przez zmienne
+for (num_var in colnames(data_numeric)) {
+  for (cat_var in colnames(data_categorical)) {
+    # Przeprowadzenie testu Kruskal-Wallis
+    test_result <- kruskal.test(as.formula(paste(num_var, "~", cat_var)), data = data)
+    
+    # Zapisanie p-value w macierzy
+    p_value_matrix[num_var, cat_var] <- test_result$p.value
+  }
+}
+```
+
+Teraz zwizualizujemy uzyskane wyniki za pomocą interaktynego heatmap'u:
+
+```{r}
+# Tworzenie interaktywnej heatmapy z ulepszoną estetyką
+plot_ly(
+  z = p_value_matrix,
+  x = colnames(p_value_matrix),
+  y = rownames(p_value_matrix),
+  type = "heatmap",
+  colorscale = list(
+    list(0, "#00008B"),       # Niskie p-value w kolorze niebieskim
+    list(0.05, "#8968CD"),   # Granica istotności statystycznej w kolorze zielonym
+    list(1, "#FFFF00")       # Wysokie p-value w kolorze białym
+  ),
+  colorbar = list(
+    title = "P-value",           # Tytuł paska kolorów
+    tickvals = c(0, 0.05, 1),    # Główne wartości
+    ticktext = c("0", "0.05", "1")  # Opisy wartości
+  ),
+  hoverinfo = "x+y+z"           # Informacje wyświetlane po najechaniu myszką
+) %>%
+  layout(
+    title = list(
+      text = "P-value z testów Kruskal-Wallis",  # Tytuł wykresu
+      font = list(size = 20, color = "#333333")
+    ),
+    xaxis = list(
+      title = "Zmienne kategoryczne",
+      tickangle = -45,                # Rotacja etykiet osi X
+      tickfont = list(size = 9)   # Wielkość czcionki
+    ),
+    yaxis = list(
+      title = "Zmienne numeryczne",
+      tickfont = list(size = 9),
+      margin(l = 100)     # Wielkość czcionki
+    ),
+    margin = list(
+      l = 100,  # Lewy margines (dla długich nazw osi Y)
+      r = 50,   # Prawy margines
+      b = 100,  # Dolny margines
+      t = 50    # Górny margines
+    )
+  )
+```
+
+Jak widać - brak jakichkolwiek zależności.
+
+## Poziom samopoczucia w zależności od trybu pracy
+
+```{r include = FALSE}
+library(highcharter)
+```
+
+Zbadamy różnice w poziomie stresu, izolacji społecznej i równowagi praca-życie między różnymi lokalizacjami pracy:
+
+```{r}
+# Grupowanie i liczenie liczby wystąpień
+stress_data <- data %>%
+  group_by(Work_Location, Stress_Level) %>%
+  summarise(Count = n(), .groups = "drop")
+
+# Obliczanie sumy dla każdego poziomu stresu
+stress_totals <- stress_data %>%
+  group_by(Stress_Level) %>%
+  summarise(Total = sum(Count))
+
+stress_data %>% 
+  hchart(
+    'bar', hcaes(x = 'Stress_Level', y = 'Count', group = 'Work_Location'),  # Zmieniamy na 'bar'
+    stacking = "normal"  # Zachowanie układu z wypełnieniem według grupy
+  ) %>%
+  hc_colors(c("#00FF7F", "#4876FF", "#EE7942")) %>%
+  hc_add_series(
+    data = stress_totals,
+    type = "scatter",
+    hcaes(x = Stress_Level, y = Total),
+    marker = list(
+      enabled = FALSE,  # Włączenie punktów na górze słupków
+      symbol = "circle",
+      radius = 5
+    ),
+    dataLabels = list(
+      enabled = TRUE,
+      format = "{point.y}",  # Suma całkowita
+      style = list(
+        fontSize = "14px",
+        fontWeight = "bold",
+        color = "black"
+      )
+    ),
+    showInLegend = FALSE,
+    name = "Ogólna liczba ocen"
+  ) %>% 
+  hc_xAxis(title = list(text = "Poziom stresu")) %>%  # Zmieniamy tytuł osi X na "Liczba ocen"
+  hc_yAxis(
+    title = list(text = "Liczba ocen"),  # Zmieniamy tytuł osi Y na "Poziom stresu"
+    labels = list(format = "{value}")  # Formatowanie etykiet na osi Y
+  ) %>% 
+  hc_title(text = "Liczba ocen poziomu stresu według lokalizacji pracy")
+
+```
+
+Z wykresu widać, że poziom stresu u poszczególnych grup jest rozłożony równomiernie, co wskazuje na brak zależności poziomu stresu od trybu wykonywanej pracy.
+
+```{r}
+workLife_balance_data <- data %>%
+  group_by(Work_Location, Work_Life_Balance_Rating) %>%
+  summarise(Count = n(), .groups = "drop")
+# Obliczanie sumy dla każdego poziomu stresu
+WLB_totals <- workLife_balance_data %>%
+  group_by(Work_Life_Balance_Rating) %>%
+  summarise(Total = sum(Count))
+
+workLife_balance_data %>% 
+  hchart(
+    'column', hcaes(x = 'Work_Life_Balance_Rating', y = 'Count', group = 'Work_Location'),
+    stacking = "normal"
+    ) %>%
+  hc_colors(c("#00FF7F", "#4876FF","#EE7942")) %>% 
+   hc_add_series(
+    data = WLB_totals,
+    type = "scatter",
+    hcaes(x = Work_Life_Balance_Rating, y = Total),
+    marker = list(
+      enabled = FALSE,  # Włączenie punktów na górze słupków
+      symbol = "circle",
+      radius = 5
+    ),
+    dataLabels = list(
+      enabled = TRUE,
+      format = "{point.y}",  # Suma całkowita
+      style = list(
+        fontSize = "14px",
+        fontWeight = "bold",
+        color = "black"
+      )
+    ),
+    showInLegend = FALSE,
+    name = "Ogólna liczba ocen"
+  ) %>% 
+  hc_xAxis(title = list(text = "Ocena work-life balance")) %>%
+  hc_yAxis(title = list(text = "Liczba ocen")) %>% 
+  hc_title(text = "Liczba ocen poziomu bilansu życia według lokalizacji pracy")
+```
+
+Sytuacja wygląda podobnie jak poprzednio. Nie ma dużego rozrzutu pomiędzy ocenami bilansu życie-praca wśród poszczególnych grup. Nie ma tak, że któraś grupa czuje większy bilans w swoim życiu. Zatem nie zależy on od trybu wykonywanej pracy.
+
+```{r}
+socialIsolation_data <- data %>%
+  group_by(Work_Location, Social_Isolation_Rating) %>%
+  summarise(Count = n(), .groups = "drop")
+
+SIR_totals <- socialIsolation_data %>%
+  group_by(Social_Isolation_Rating) %>%
+  summarise(Total = sum(Count))
+
+socialIsolation_data <- socialIsolation_data %>% 
+  left_join(SIR_totals, by = "Social_Isolation_Rating") %>%
+  # proporcje
+  mutate(Proportion = (Count / Total)*100)
+
+
+socialIsolation_data %>% 
+  hchart(
+    'column', hcaes(x = 'Social_Isolation_Rating', y = 'Proportion', group = 'Work_Location'),
+    stacking = "normal"
+  ) %>%
+  hc_colors(c("#00FF7F", "#4876FF","#EE7942")) %>% 
+  hc_add_series(
+    data = socialIsolation_data,
+    type = "scatter",
+    hcaes(x = Social_Isolation_Rating, y = Total),
+    marker = list(
+      enabled = FALSE,  # Włączenie punktów na górze słupków
+      symbol = "circle",
+      radius = 5
+    ),
+    dataLabels = list(
+      enabled = TRUE,
+      format = "{point.y:.2f}",  # proporcja z dwoma miejscami po przecinku
+      style = list(
+        fontSize = "14px",
+        fontWeight = "bold",
+        color = "black"
+      )
+    ),
+    showInLegend = FALSE,
+    name = "Ogólna proporcja ocen"
+  ) %>% 
+  hc_xAxis(title = list(text = "Ocena izolacji społecznej")) %>%
+  hc_yAxis(
+    title = list(text = "Proporcja ocen"),
+    min = 0,  # Ustawienie minimalnej wartości osi Y
+    max = 100,
+    labels = list(format = "{value}%")  # Dodanie znaku % do etykiet na osi Y
+  ) %>% 
+  hc_tooltip(
+    pointFormat = '<b>{point.y:,.2f}%</b>'
+  ) %>%
+  hc_title(text = "Proporcje ocen poziomu izolacji społecznej wg lokalizacji pracy")
+
+```
+
+Tutaj proporcje również są podobne. Na ich podstawie możemy stwierdzić, że poziom izolacji społecznej nie zależy od lokalizacji wykonywanej pracy.
+
+## Wpływ aktywności fizycznej na poziom stresu i jakość snu
+
+Uwzględniamy tutaj również tryb wykonywanej pracy:
+
+```{r}
+library(networkD3)
+# Tworzymy dane przepływu (links) uwzględniając Work_Location
+sankey_data <- data %>%
+  count(Work_Location, Physical_Activity, Sleep_Quality, Stress_Level) %>%
+  rename(Count = n)
+
+# Konwertujemy wszystkie zmienne na character, aby zapewnić spójność typów
+sankey_data$Work_Location <- as.character(sankey_data$Work_Location)
+sankey_data$Physical_Activity <- as.character(sankey_data$Physical_Activity)
+sankey_data$Sleep_Quality <- as.character(sankey_data$Sleep_Quality)
+sankey_data$Stress_Level <- as.character(sankey_data$Stress_Level)
+
+# Unikalne węzły (nodes), teraz uwzględniamy również Work_Location
+nodes <- data.frame(name = unique(c(
+  sankey_data$Work_Location,  # Dodajemy Work_Location jako pierwszy węzeł
+  sankey_data$Physical_Activity,
+  sankey_data$Sleep_Quality,
+  sankey_data$Stress_Level
+)))
+
+# Tworzymy indeksy dla węzłów (konwersja nazw na indeksy)
+sankey_links <- sankey_data %>%
+  mutate(
+    source = match(Work_Location, nodes$name) - 1,  # Zmieniamy na Work_Location jako źródło
+    target1 = match(Physical_Activity, nodes$name) - 1,
+    target2 = match(Sleep_Quality, nodes$name) - 1,
+    target3 = match(Stress_Level, nodes$name) - 1
+  )
+
+# Pierwsze połączenie: Work_Location -> Physical_Activity
+links1 <- sankey_links %>%
+  select(source, target = target1, value = Count)
+
+# Drugie połączenie: Physical_Activity -> Sleep_Quality
+links2 <- sankey_links %>%
+  select(source = target1, target = target2, value = Count)
+
+# Trzecie połączenie: Sleep_Quality -> Stress_Level
+links3 <- sankey_links %>%
+  select(source = target2, target = target3, value = Count)
+
+# Łączymy przepływy
+links <- bind_rows(links1, links2, links3)
+
+# Określenie kolorów dla grup (np. dla poziomów stresu)
+my_color <- 'd3.scaleOrdinal() .domain(["Low", "Medium", "High"]) .range(["#69b3a2", "steelblue", "red"])'
+
+# Tworzenie wykresu Sankey z dodanym pierwszym słupkiem Work_Location
+sankeyNetwork(
+  Links = links,
+  Nodes = nodes,
+  Source = "source",
+  Target = "target",
+  Value = "value",
+  NodeID = "name",
+  units = "Respondents",
+  fontSize = 12,
+  nodeWidth = 30
+)
+```
+
+Szerokości linków (zaznaczonych kolorem szarym, łączące poszczególne kategorie danych) są podobne. Ponadto ich rozkład jest prawie identyczny. Wskazuje to na to, że nie tryb wykonywanej pracy nie jest powiązany z poziomem aktywności fizycznej, a co za tym idzie lokalizacja pracy i poziom aktywności fizycznej nie mają wpływu na poziom stresu czy snu u pracowników.
+
+## Współczynnik zdrowia psychicznego (MHI)
+
+MHI to autorski wskaźnik, który pomoże bliżej przyjerzeć się problemowi i prościej przeanalizować dane, które w większości są kategoryczne. MHI przyjmuje wartości z zakresu \[0,1\]. Im bliżej jest jedynki, tym lepiej czuje się dana osoba względem zdrowia psychicznego.\
+MHI został obliczony na podstawie zmiennych takich jak:
+
+-   `Mental_Health_Condition` - ponieważ choroby psychiczne mają bezpośredni wpływ na zdrowie psychiczne,
+
+-   `Stress_Level` - poziom stresu wpływa na nasze samopoczucie,
+
+-   `Social_Isolation_Rating` - brak interakcji z innymi sprawia, że czujemy się gorzej,
+
+-   `Work_Life_Balance_Rating` - im trudniej nam jest zbilansować życie, tym gorzej się czujemy,
+
+-   i `Physical_Activity` - czujemy się lepiej, gdy ćwiczymy.
+
+Poszczególnym kategoriom powyższych zmiennych nadano odpowiednie wagi od 0 do 1 z poszczególnymi odstępami. Dodatkowo przy zmiennych `Social_Isolation_Rating` i `Work_Life_Balance_Rating` przeskalowano wartości, aby dopasować je do dalszych obliczeń.
+
+```{r include = TRUE}
+# Mapowanie wartości zmiennych i skalowanie
+data <- data %>%
+  mutate(
+    # Składowe wskaźnika
+    Mental_Health_Condition_Score = case_when(
+      Mental_Health_Condition == "None" ~ 1,
+      Mental_Health_Condition == "Anxiety" ~ 0.75,
+      Mental_Health_Condition == "Burnout" ~ 0.5,
+      Mental_Health_Condition == "Depression" ~ 0.25,
+      TRUE ~ NA_real_
+    ),
+    Stress_Level_Score = case_when(
+      Stress_Level == "Low" ~ 1,
+      Stress_Level == "Medium" ~ 0.5,
+      Stress_Level == "High" ~ 0,
+      TRUE ~ NA_real_
+    ),
+    Social_Isolation_Score = (as.numeric(Social_Isolation_Rating) - 1) / 4, # Skalowanie 1-5 do 0-1
+    Work_Life_Balance_Score = (as.numeric(Work_Life_Balance_Rating) - 1) / 4, # Skalowanie 1-5 do 0-1
+    Physical_Activity_Score = case_when(
+      Physical_Activity == "None" ~ 0,
+      Physical_Activity == "Weekly" ~ 0.5,
+      Physical_Activity == "Daily" ~ 1,
+      TRUE ~ NA_real_
+    )
+  )
+
+# Obliczanie współczynnika zdrowia psychicznego
+data <- data %>%
+  mutate(
+    Mental_Health_Index = (
+      Mental_Health_Condition_Score + 
+      Physical_Activity_Score +
+      (1 - Social_Isolation_Score) + # Im mniejsza izolacja, tym lepszy wynik
+      Work_Life_Balance_Score +
+      Stress_Level_Score
+    ) / 5 # Średnia z 5 komponentów
+  )
+```
+
+### Rozkład MHI dla całego zbioru danych
+
+```{r}
+median_MHI_value <- median(data$Mental_Health_Index, na.rm = TRUE)
+histogram_chart <- data %>%
+  ggplot(aes(x = Mental_Health_Index)) +
+  geom_histogram(binwidth = 0.05, fill = "#FF6347", color = "white", alpha = 0.70) +
+  labs(
+    title = "Rozkład wskaźnika zdrowia psychicznego",
+    x = "Wskaźnik zdrowia psychicznego",
+    y = "Liczba osób"
+  ) + 
+  scale_x_continuous(breaks = seq(0.0, 1, by = 0.1))+
+  geom_vline(aes(xintercept = median_MHI_value), color = "black", linetype = "dashed", size = 1)+
+  theme_minimal()
+
+histogram_chart <- ggplotly(histogram_chart)
+histogram_chart
+```
+
+Rozkład wartości wskaźnika w badanym zbiorze danych jest zbliżony do rozkładu normalnego z medianą 0,5. Dostajemy stąd, że połowa obserwacji czuje się gorzej niż średnio, a połowa - lepiej.
+
+```{r}
+boxplot_chart <- data %>%
+  ggplot(aes(x = Work_Location, y = Mental_Health_Index, fill = Work_Location)) +
+  geom_boxplot() +
+  labs(
+    title = "Rozkład wskaźnika zdrowia psychicznego według lokalizacji pracy",
+    x = "Lokalizacja pracy",
+    y = "MHI"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("#00FF7F", "#4876FF", "#EE7942"))
+
+boxplot_chart <- ggplotly(boxplot_chart)
+boxplot_chart
+```
+
+Widać, że wartości MHI niezbyt się różnią w zależności od lokalizacji pracy. Nieco wyróżniają się nim jedynie pracownicy zdalni, ale przedstawiona różnica w poziomie zdrowia psychicznego nie jest znacząca. Mówi nam to, że samopoczucie danej osoby nie zależy od lokalizacji pracy. Tym samym, osoby pracujące zdalnie, nie czują się zdecydowanie gorzej czy lepiej od wszystkich pozostałych.
+
+## Powiązania MHI z poszczególnymi zmiennymi
+
+### 1. Czy złe samopoczucie psychiczne w związku z wykonywaną pracą zdalną zależy od rodzaju wykonywanego zawodu lub wieku pracownika?
+
+```{r}
+data1 <- data.frame(
+  id=seq(1,60),
+  individual=paste( "Mister ", seq(1,60), sep=""),
+  value=sample( seq(10,100), 60, replace=T)
+)
+
+job_distribution <- data %>%
+  count(Job_Role) %>%
+  arrange(desc(n)) %>% 
+  mutate(id=seq(1,7))
+ 
+# ----- ramka danych dla labels ---- #
+# imie i pozycja każdego labela
+label_data <- job_distribution
+ 
+# kąt labelów
+number_of_bar <- nrow(label_data)
+angle <-  90 - 360 * (label_data$id-0.5) /number_of_bar
+ 
+# obliczamy przyrównanie labela (lewe czy prawe)
+label_data$hjust<-ifelse( angle < -90, 1, 0)
+ 
+label_data$angle<-ifelse(angle < -90, angle+180, angle)
+# ----- ------------------------------------------- ---- #
+ 
+ 
+p <- ggplot(job_distribution, aes(x=as.factor(id), y=n, fill = Job_Role)) +       
+  geom_bar(stat="identity") +
+  
+  # Granice wykresu: wartości ujemne dla wewnętrznego okręgu
+   ylim(-max(job_distribution$n)*0.3, max(job_distribution$n) + 80)  +
+  
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    axis.title = element_blank(),
+    panel.grid = element_blank(),
+    plot.margin = unit(rep(-1,4), "cm")
+  ) +
+  
+  # zmiana systemu współrzędnych
+  coord_polar(start = 0) +
+  
+  # dodajemy labely
+  geom_text(data=label_data, aes(x=id, y=n+10, label=Job_Role, hjust=hjust), color="black", fontface="bold",alpha=0.6, size=2.5, angle= label_data$angle, inherit.aes = FALSE ) 
+ 
+p
+```
+
+Wykres wskazuje, że rozkład zawodów w zbiorze danych jest równomierny (\*\*co z tego wynika?\*\*)
+
+```{r}
+heatmap_AgeHMI_data <- data %>%
+  mutate(Age_Group = cut(Age, 
+                         breaks = c(-Inf, 20, 30, 40, 50,60, Inf), 
+                         labels = c("Mniej niż 20", "20–30", "30–40", "40–50","50-60", "60+"))) %>%
+  group_by(Job_Role, Age_Group) %>%
+  summarise(Average_Mental_Health = mean(Mental_Health_Index, na.rm = TRUE))
+
+heatmap <- ggplot(heatmap_AgeHMI_data, aes(x = Job_Role, y = Age_Group, fill = Average_Mental_Health)) +
+  geom_tile() +
+  labs(title = "Wpływ zawodu i wieku na zdrowie psychiczne", 
+       x = "Zawód", 
+       y = "Grupa wiekowa",
+       fill = "Wskaźnik MHI") +
+  scale_fill_gradient(low = "red", high = "green") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # Rotacja napisów na osi X
+
+interactive_heatmap <- ggplotly(heatmap)
+
+interactive_heatmap
+```
+
+Warto zwrócić uwagę na to, że maksymalny wiek w zbiorze danych to 60, a minimalny to 22 lata. Różnice w wartościach MHI dla poszczególnych zawodów i grup wiekowych są minimalne, co wskazuje na to, że poziom zdrowia psychicznego nie zależy od grupy wiekowej i zawodu.
+
+```{r}
+ridgeline_AgeHMI_data <- data %>%
+  select(Job_Role, Age, Mental_Health_Index) %>% 
+  mutate(Age_Group = cut(Age, 
+                         breaks = c(-Inf, 20, 30, 40, 50,60, Inf), 
+                         labels = c("Mniej niż 20", "20–30", "30–40", "40–50","50-60", "60+"))) 
+
+library(ggridges)
+ggplot(ridgeline_AgeHMI_data, aes(x = Mental_Health_Index, y = Job_Role, fill = Job_Role)) +
+  geom_density_ridges(alpha = 0.5, scale = 0.8) +
+  theme_ridges() +
+  labs(title = "Ridgeline Chart dla MHI",
+       x = "",
+       y = "")+
+  theme(legend.position = "none")
+```
+
+Widać również brak znaczących różnic wartości wskaźnika MHI dla któregokolwiek z przedstawionych zawodów, czyli nie jest tak, że przedstawiciele któregoś zawodu czują się znacznie gorzej/lepiej niż inni.
+
+### 2. Jakie są różnice w samopoczuciu psychicznym pracowników zdalnych w zależności od ich płci?
+
+```{r}
+ggplot(data %>% 
+         filter(Work_Location == "Remote", 
+                Mental_Health_Index >= 0, 
+                Mental_Health_Index <= 1), 
+       aes(x = Gender, y = Mental_Health_Index, fill = Gender)) +
+  geom_violin(trim = FALSE, alpha = 0.6) +
+  geom_boxplot(width = 0.4, outlier.shape = NA) +
+  ylab("MHI") +
+  xlab("Płeć") +
+  ggtitle("Samopoczucie wg płci") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+
+```
+
+Również bardzo zbliżone wyniki otrzymujemy odwzorowując MHI w zależności od płci. Wyniki są takie same jak poprzednio: brak znaczących różnic. Możemy jedynie zauważyć, że z tych, kto wskazał swoją płeć jako "Prefer not to say", większość czuje się dobrze. Natomiast dla osób, które zaznaczyły "Non-binary", widzimy rozkład zbliżony do bimodalnego. Oznacza to, że istnieją w tym przypadku dwie osobne grupy: osoby non-binary, które dobrze się czują, i te osoby non-binary, które czują się źle ze względu na zdrowie psychiczne.
+
+### 3. Czy ogólny stan psychiczny pracowników stacjonarnych, hybrydowych oraz zdalnych różni się w zależności od zamieszkiwanego kontynentu?
+
+```{r}
+library(ggplot2)
+library(ggiraph)
+library(dplyr)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(patchwork)
+
+# Wczytanie danych geograficznych
+world_sf <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Filtracja: usuwamy Antarktydę
+world_sf <- world_sf %>%
+  filter(continent != "Antarctica")
+
+# Naprawa geometrii, aby obsługiwać linie daty
+world_sf <- st_make_valid(world_sf)
+world_sf <- st_wrap_dateline(world_sf, options = c("WRAPDATELINE=YES"))
+
+# Grupowanie danych na poziomie kontynentów
+continent_sf <- world_sf %>%
+  group_by(continent) %>%
+  summarise(geometry = st_union(geometry)) %>%  # Łączenie geometrii krajów w jeden obiekt dla kontynentu
+  rename(Region = continent)
+
+# Przekształcenie układu współrzędnych na odpowiedni (np. EPSG:3857)
+continent_sf <- st_transform(continent_sf, crs = 3857)
+
+# Dane ze wskaźnikiem zdrowia psychicznego
+map_data <- data %>%
+  group_by(Region) %>%
+  summarise(Mental_Health_Index = mean(Mental_Health_Index, na.rm = TRUE))
+
+# Łączenie danych geograficznych z map_data
+continent_data <- continent_sf %>%
+  left_join(map_data, by = "Region")
+
+# Barplot z kontynentami
+barplot <- ggplot(continent_data, aes(
+  x = reorder(Region, Mental_Health_Index),
+  y = Mental_Health_Index,
+  tooltip = Region,
+  data_id = Region,
+  fill = Mental_Health_Index
+)) +
+  geom_col_interactive() +
+  scale_fill_gradient(low = "red", high = "green", name = "MHI") +
+  coord_flip() +
+  theme_minimal() +
+  theme(
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    plot.margin = margin(5, 5, 5, 5),
+    axis.text = element_text(size = 8),
+    legend.position = "none"
+  ) +
+  labs(title = "Średni wskaźnik zdrowia psychicznego wg kontynentów")
+
+# Mapa z kontynentami
+map <- ggplot() +
+  geom_sf_interactive(
+    data = continent_data,
+    aes(fill = Mental_Health_Index, tooltip = Region, data_id = Region)
+  ) +
+  scale_fill_gradient(low = "red", high = "green", name = "MHI") +
+  coord_sf(crs = st_crs(3857)) +
+  theme_void() +
+  theme(legend.position = "right") +
+  labs(title = "Mapa wskaźnika zdrowia psychicznego")
+
+# Połączenie barplotu i mapy w jednym układzie
+combined_plot <- (barplot) / (map) + plot_layout(heights = c(0.8, 2))
+
+interactive_plot <- girafe(
+  ggobj = combined_plot,
+  width_svg = 10,
+  height_svg = 6
+)
+
+interactive_plot <- girafe_options(
+  interactive_plot,
+  opts_hover(css = "stroke:black;stroke-width:2px;"),
+  opts_tooltip(css = "background:white;color:black;padding:5px;border-radius:10px;")
+)
+
+interactive_plot
+
+```
+
+Najwyższy (ale nie znacząco, ponieważ odbiega od najniższego jedynie o 0.008 jednostek) występuje w Azji. Oznacza to, że w przeprowadzonej ankiecie najwyższe wyniki MHI uzyskały pracownicy właśnie stamtąd. Ogólny poziom zdrowia psychicznego na świecie, wśród zbadanych pracowników, jest średni. Wartości MHI nie są zdominowane przez bardzo niskie albo bardzo wysokie wyniki. Przeciętna osoba ma umiarkowany poziom zdrowia psychicznego - ani bardzo dobry, ani bardzo zły.
+
+### 4. Czy wpływ pracy hybrydowej jest mniej szkodliwy dla zdrowia psychicznego człowieka niż wpływ pracy zdalnej?
+
+```{r}
+ggplot(data %>% 
+         filter(Work_Location %in% c("Hybrid", "Remote"), 
+                Mental_Health_Index >= 0, 
+                Mental_Health_Index <= 1), 
+       aes(x = Work_Location, y = Mental_Health_Index, fill = Work_Location)) +
+  geom_violin(trim = FALSE, alpha = 0.6) +
+  geom_boxplot(width = 0.4, outlier.shape = NA) +
+  ylab("MHI") +
+  xlab("Lokalizacja pracy") +
+  ggtitle("Hybrid Vs Remote MHI") +
+  theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+```
+
+Rozkład wskaźnika MHI dla pracowników zdalnych jest zbliżony do rozkładu bimodalnego. Jego większa skośność w prawą stronę wskazuje na to, że występuje przewaga osób z lepszym samopoczuciem psychicznym ze zdalną lokalizacją pracy. Potwierdza to również mediana, którą możemy porównać do tej występującej u pracowników hybrydowych. Wnioskujemy, że praca zdalna wiąże się z lepszym samopoczuciem psychicznym niż praca hybrydowa.
+
+### 5. Czy tryb wykonywanej pracy może mieć wpływ na jakość snu pracowników?
+
+```{r}
+data_summary <- data %>%
+  count(Sleep_Quality, Work_Location)
+
+interactive_sleep_chart <- hchart(data_summary, 
+                                  "column", 
+                                  hcaes(x = Sleep_Quality, y = n, group = Work_Location)) %>%
+  hc_title(text = "Jakość snu wg trybu pracy") %>%
+  hc_xAxis(title = list(text = "Jakość snu")) %>%
+  hc_yAxis(title = list(text = "Liczba osób")) %>%
+  hc_plotOptions(
+    column = list(
+      borderWidth = 0,
+      groupPadding = 0.1  # Odstępy między grupami
+    )
+  ) %>%
+  hc_colors(c("#B23AEE", "#EE7621","#00EEEE")) 
+
+interactive_sleep_chart
+```
+
+Nie występuje tutaj wyraźny wpływ trybu pracy na jakość snu pracowników. Nie możemy wyciągnąć jednoznacznych wniosków.
+
+### 6. W jakim stopniu wsparcie oferowane przez pracodawcę zmniejsza negatywne skutki pracy zdalnej?
+
+```{r}
+# Wykres słupkowy z podziałem na Work_Location
+support_barplot_location <- ggplot(data %>% filter(Work_Location=="Remote"), aes(x = as.factor(Company_Support_for_Remote_Work), y = Mental_Health_Index, fill = Company_Support_for_Remote_Work)) +
+  stat_summary(fun = "mean", geom = "bar", position = "dodge", alpha = 0.8) +
+  labs(title = "Średni poziom zdrowia psychicznego wg wsparcia pracodawcy i trybu pracy", 
+       x = "Wsparcie pracodawcy", 
+       y = "Średni poziom zdrowia psychicznego (MHI)") +
+  scale_x_discrete(labels = c("Bardzo niskie", "Niskie", "Średnie", "Wysokie", "Bardzo wysokie")) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+support_barplot_location
+
+```
+
+Jak widać, współczynnik zdrowia psychicznego jest taki sam dla różnych poziomów wsparcia oferowanych przez pracodawcę. Poszczególne poziomy wsparcia nie różnicują grupy pracowników zdalnych pod kątem zdrowia psychicznego.
+
+### 7. Czy liczba przepracowanych godzin tygodniowo ma znaczenie w kontekście zdrowia psychicznego w pracy zdalnej?
+
+```{r}
+hours_chart <- ggplot(data %>% filter(Work_Location == "Remote"), aes(x = Hours_Worked_Per_Week, y = Mental_Health_Index)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", col = "blue") +
+  labs(title = "Wpływ liczby godzin na zdrowie psychiczne", x = "Godziny pracy tygodniowo", y = "Zdrowie psychiczne (MHI)") +
+  theme_minimal()
+
+hours_chart
+```
+
+Liczba przepracowanych godzin tygodniowo nie wpływa w istotny sposób na poziom zdrowia psychicznego. Średni poziom zdrowia psychicznego jest stały i nie zależy od liczby godzin pracy.
+
+# Podsumowanie
+
+Przeprowadzone analizy wskazują, że tryb wykonywanej pracy (zdalny, hybrydowy czy stacjonarny) nie ma istotnego wpływu na poziom zdrowia psychicznego pracowników, ich stres, jakość snu ani poczucie izolacji społecznej, co potwierdzają zarówno wskaźnik MHI, jak i brak znaczących różnic w wynikach między grupami. Wsparcie pracodawcy oraz liczba przepracowanych godzin również nie różnicowały istotnie zdrowia psychicznego, a aktywność fizyczna nie była powiązana z trybem pracy. Mimo że pracownicy zdalni wykazywali nieznacznie wyższe wartości MHI niż hybrydowi, różnice te były niewielkie, co sugeruje, że ogólny wpływ lokalizacji pracy na dobrostan psychiczny jest ograniczony. Wyniki wskazują na potrzebę indywidualnego podejścia do wsparcia pracowników niezależnie od trybu pracy.
