@@ -26,7 +26,7 @@ execute:
 
 Pandemia COVID-19 przyczyniła się do radykalnej zmiany w sposobie wykonywania pracy, powodując globalny wzrost popularności pracy zdalnej i hybrydowej. Choć ten model pracy zapewnia większą elastyczność, jego wpływ na zdrowie psychiczne i samopoczucie pracowników budzi coraz większe zainteresowanie badaczy oraz praktyków. Praca zdalna niesie za sobą zarówno korzyści, jak i wyzwania – od ograniczenia czasu spędzanego na dojazdach, po poczucie izolacji społecznej i trudności w zachowaniu równowagi między życiem zawodowym a prywatnym. Niniejszy projekt podejmuje próbę zrozumienia, w jakim stopniu te czynniki kształtują dobrostan psychiczny pracowników. Celem jest zatem udzielenie odpowiedzi na pytanie "Jaki jest wpływ pracy zdalnej oraz jej uwarunkowań na zdrowie i samopoczucie psychiczne człowieka?".
 
-![Nie chcemy, aby nasi pracownicy tak się czuli, więc należy przebadać kwestię zdrowia psychicznego!](images/Follow me on instagram_ huongg_thu14_Thank you 💕.jpg)
+![Nie chcemy, aby nasi pracownicy tak się czuli, więc należy przebadać kwestię zdrowia psychicznego!](images/Follow%20me%20on%20instagram_%20huongg_thu14_Thank%20you%20💕.jpg)
 
 Aby obszernie przeanalizować problem, rozpatrywać będziemy następujące pytania badawcze:
 
